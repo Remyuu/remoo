@@ -1426,9 +1426,7 @@ class DiscontinuousExample(Scene):
 
 
 
-
 class Curve3(Scene):
-    STEP = 0
     def construct(self):
         #initial value
         A = 1
@@ -1448,70 +1446,53 @@ class Curve3(Scene):
         for d,s in zip(D_G,values):
             d.next_to(s,aligned_edge=DOWN)
 
-        pc = ParametricFunction(
-                lambda t: np.array([
-                    np.cos(a * t) + np.cos(b * t) / 2 + np.sin(c * t) / 3,
-                    np.sin(a * t) + np.sin(b * t) / 2 + np.cos(c * t) / 3,
-                    0
-                ]),
-                t_range=[0,2*PI,0.007],
-                fill_opacity=0
-            ).scale(2)\
-            .set_color(color=[RED,YELLOW,BLUE,RED])\
-            .move_to(lastPC)
+        pc = self.get_param_func(A,B,C)
 
-
-
-
-
-        def get_param_func(a, b, c):
-            lastPC=pc
-            pc = ParametricFunction(
-                lambda t: np.array([
-                    np.cos(a * t) + np.cos(b * t) / 2 + np.sin(c * t) / 3,
-                    np.sin(a * t) + np.sin(b * t) / 2 + np.cos(c * t) / 3,
-                    0
-                ]),
-                t_range=[0,2*PI,0.007],
-                fill_opacity=0
-            ).scale(2)\
-            .set_color(color=[RED,YELLOW,BLUE,RED])\
-            .move_to(lastPC)
-
-            return pc
-        
-        pc = get_param_func(A,B,C)
-        lastPC = pc
-        pc.add_updater(
-            lambda mob: mob.become(
-                get_param_func(
+        upfunc =lambda mob: mob.become(
+                self.get_param_func(
                     D_A.get_value(),
                     D_B.get_value(),
                     D_C.get_value()
-                )
+                ).move_to(pc)
             )
-        )
 
-
-
+        pc.add_updater(upfunc)
         self.add(pc)
+        pc.shift(LEFT*3)
         self.play(
             ChangeDecimalToValue(D_B,15),
             run_time=2,
             rate_func=linear,
         )
         self.wait(0.3)
-
-        self.mobjects[1].shift(RIGHT)
-
+        #暂时移除updater
+        pc.remove_updater(upfunc)
+        self.play(pc.animate.shift(RIGHT*6),run_time=1)
+        #平滑移动完，再添加回来
+        pc.add_updater(upfunc)
         self.play(
             ChangeDecimalToValue(D_A,10),
             run_time=2,
             rate_func=linear,
         )
 
+    def get_param_func(self, a, b, c):
+        pc = ParametricFunction(
+            lambda t: np.array([
+                np.cos(a * t) + np.cos(b * t) / 2 + np.sin(c * t) / 3,
+                np.sin(a * t) + np.sin(b * t) / 2 + np.cos(c * t) / 3,
+                0
+            ]),
+            t_range=[0,2*PI,0.007],
+            fill_opacity=0
+        ).scale(2)\
+        .set_color(color=[RED,YELLOW,BLUE,RED])
+        return pc
 
-
+class move(Scene):
+    def construct(self):
+        circle = Circle()
+        self.play(circle.animate.shift(LEFT))
 
 
 
@@ -1530,10 +1511,47 @@ All sound starts with vibration
 数学上的fractal在音乐中也有对应
 '''
 
+'''
+在manim社区版本中，
+一、对于一般的物体，移动的方法分为 (瞬移) 和 (带动画移动)
+    1、瞬移
+        #直接对物体操作即可
+    obj.shift(LEFT) 
+        #瞬间移动,LEFT,UP是单位方向向量
+        #以自身为参考
 
+    obj.move_to()
+        #瞬间移动
+        #以屏幕中心为参考
 
+    obj.next_to(circle,RIGHT)
+        #瞬间移动
+        #以传入对象为参考
 
+    obj.align_to(circle,DOWN)
+        #瞬间移动
+        #以传入对象的假想边界作为调整
+        #传入DOWN(0,-1)，那么物体的纵坐标就会"对其"对象的下边界
+            #这个假想的边界一般以物体以中心为原点的第二象限区域
+        #此处可参考https://docs.manim.community/en/stable/tutorials/building_blocks.html#mobjectplacement
 
+    2、带动画移动
+        #此处需要使用animate方法
+    self.play(obj.animate.shift(LEFT))
+        #移动时间持续1秒
+        #以自身为参考
+    #。。。省略，同理
+
+二、对于添加了 add_update()的物体obj，如果想移动实时更新的物体，则需要从更新函数中处理。
+    此时，直接对obj使用移动的函数是无效的。例如 obj.shift(LEFT) 
+    add_update的逻辑是帧渲染，每一帧画面都会从 add_update()中传入的 方法参数 中生成新的obj。例如         
+        obj.add_updater(
+            lambda mob: mob.become(Function(lambda x : x + 1 ))
+        )
+    manim在渲染的过程中每一帧画面的obj都会调用一次 lambda mob: mob.become(Function(lambda x : x + 1 ))，作为这一帧的画面。
+    所以，如果我们要移动obj的位置，只有一种方法：
+        移动 Function(lambda x : x + 1 ) 的位置。
+'''
 
 
 
