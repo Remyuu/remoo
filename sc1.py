@@ -3,6 +3,7 @@ from manim import *
 import math
 import sympy
 
+
 #这是一个最基本的manim结构，类名叫做BaseFrame，传入一个场景Scene，并且包含一个construct方法，传入self
 class BaseFrame(Scene):
     def construct(self):
@@ -1334,8 +1335,8 @@ class FourierTrans_First(Scene):
 
         #一些全局参数-修改这三个参数就好
         delta = 0#偏移量
-        rou = 20#theta的系数
-        move = 10#极坐标变换的变化程度系数
+        rou = 1#theta的系数
+        move = 1#极坐标变换的变化程度系数
         dn_kwargs = {'num_decimal_places':3,}
         D_delta = DecimalNumber(delta,**dn_kwargs)
         D_rou = DecimalNumber(rou,**dn_kwargs)
@@ -1350,7 +1351,7 @@ class FourierTrans_First(Scene):
         #更新函数
         def Func_axes():
             return axes.plot(r,color=PINK)
-    
+
         def Func_polar():
             return polarPlane.plot_polar_graph(r, [0, 2 * PI], color=ORANGE)
 
@@ -1374,8 +1375,8 @@ class FourierTrans_First(Scene):
 
         self.add(D_rou,D_move)
         self.play(Write(axes_graph),Write(polar_graph),Write(para_graph))
-        #self.play(ChangeDecimalToValue(D_rou,20),run_time=5,rate_func=linear)
-        self.play(ChangeDecimalToValue(D_move,20),run_time=5,rate_func=linear)
+        self.play(ChangeDecimalToValue(D_rou,20),run_time=20,rate_func=linear)
+        self.play(ChangeDecimalToValue(D_move,20),run_time=20,rate_func=linear)
         self.wait(1)
         
 
@@ -1552,6 +1553,28 @@ All sound starts with vibration
     所以，如果我们要移动obj的位置，只有一种方法：
         移动 Function(lambda x : x + 1 ) 的位置。
 '''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
